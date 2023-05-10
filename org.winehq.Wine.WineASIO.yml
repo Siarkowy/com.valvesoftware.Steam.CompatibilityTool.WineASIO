@@ -7,6 +7,8 @@ runtime-version: &runtime-version '22.08'
 x-gl-version: &gl-version '1.4'
 x-gl-versions: &gl-versions 22.08;1.4
 
+build-extension: true
+
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
     directory: lib/i386-linux-gnu
