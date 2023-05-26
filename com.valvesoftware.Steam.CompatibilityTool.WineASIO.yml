@@ -1,64 +1,10 @@
 id: com.valvesoftware.Steam.CompatibilityTool.WineASIO
 default-branch: &app-version stable-22.08
-x-extension-versions: &extension-versions stable;stable-22.08
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '22.08'
-x-gl-version: &gl-version '1.4'
-x-gl-versions: &gl-versions 22.08;1.4
 
 build-extension: true
-
-add-extensions:
-  org.freedesktop.Platform.Compat.i386:
-    directory: lib/i386-linux-gnu
-    version: *runtime-version
-
-  org.freedesktop.Platform.Compat.i386.Debug:
-    directory: lib/debug/lib/i386-linux-gnu
-    version: *runtime-version
-    no-autodownload: true
-
-  org.freedesktop.Platform.GL32:
-    directory: lib/i386-linux-gnu/GL
-    version: *gl-version
-    versions: *gl-versions
-    subdirectories: true
-    no-autodownload: true
-    autodelete: false
-    add-ld-path: lib
-    merge-dirs: vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d
-    download-if: active-gl-driver
-    enable-if: active-gl-driver
-
-  org.freedesktop.Platform.VAAPI.Intel.i386:
-    directory: lib/i386-linux-gnu/dri/intel-vaapi-driver
-    version: *runtime-version
-    subdirectories: true
-    no-autodownload: true
-    autodelete: false
-    add-ld-path: lib
-    download-if: active-gl-driver
-    enable-if: active-gl-driver
-
-  org.freedesktop.Platform.ffmpeg-full:
-    directory: lib/ffmpeg
-    add-ld-path: .
-    version: *runtime-version
-    autodelete: false
-
-  org.freedesktop.Platform.ffmpeg_full.i386:
-    directory: lib32/ffmpeg
-    add-ld-path: .
-    version: *runtime-version
-    autodelete: false
-
-  org.winehq.Wine.DLLs:
-    directory: dlls
-    subdirectories: true
-    merge-dirs: lib;lib32;
-    version: *app-version
-    versions: *extension-versions
 
 sdk-extensions:
   - org.freedesktop.Sdk.Compat.i386
