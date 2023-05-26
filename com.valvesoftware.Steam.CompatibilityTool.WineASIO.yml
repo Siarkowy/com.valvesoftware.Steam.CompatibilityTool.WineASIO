@@ -1,4 +1,4 @@
-id: org.winehq.Wine.WineASIO
+id: com.valvesoftware.Steam.CompatibilityTool.WineASIO
 default-branch: &app-version stable-22.08
 x-extension-versions: &extension-versions stable;stable-22.08
 sdk: org.freedesktop.Sdk

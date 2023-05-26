@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <component type="addon">
-  <id>org.winehq.Wine.WineASIO</id>
-  <extends>org.freedesktop.Platform</extends>
+  <id>com.valvesoftware.Steam.CompatibilityTool.WineASIO</id>
+  <extends>com.valvesoftware.Steam</extends>
 
   <name>WineASIO</name>
   <project_license>LGPL-2.1+</project_license>
