@@ -21,13 +21,13 @@ build-options:
 x-compat-i386-opts: &compat_i386_opts
   prepend-pkg-config-path: /app/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
   # Some autotools-based builds will fail if -L/app/lib32 isn't first
-  ldflags: -L/app/lib32 -Wl,-rpath-link=/app/lib32 -Wl,-z,relro,-z,now -Wl,--as-needed
+  ldflags: -L/app/share/steam/compatibilitytools.d/WineASIO/lib32 -Wl,-rpath-link=/app/share/steam/compatibilitytools.d/WineASIO/lib32 -Wl,-z,relro,-z,now -Wl,--as-needed
   ldflags-override: true
   append-path: /usr/lib/sdk/toolchain-i386/bin
   env:
     CC: ccache i686-unknown-linux-gnu-gcc
     CXX: ccache i686-unknown-linux-gnu-g++
-  libdir: /app/lib32
+  libdir: /app/share/steam/compatibilitytools.d/WineASIO/lib32
 
 separate-locales: false
 cleanup:
@@ -54,14 +54,15 @@ modules:
 
   - name: wine
     build-options:
+      prefix: /app/share/steam/compatibilitytools.d/WineASIO
       arch:
         x86_64:
           config-opts:
             - --enable-win64
             - --with-mingw=ccache x86_64-w64-mingw32-gcc
-          libdir: /app/lib
+          libdir: /app/share/steam/compatibilitytools.d/WineASIO/lib
       env:
-        LIBDIR: lib
+        LIBDIR: /app/share/steam/compatibilitytools.d/WineASIO/lib
     config-opts: &wine-config-opts
       - --disable-win16
       - --disable-tests
@@ -96,17 +97,18 @@ modules:
     only-arches:
       - x86_64
     build-options:
+      prefix: /app/share/steam/compatibilitytools.d/WineASIO
       arch:
         x86_64: *compat_i386_opts
       config-opts:
-        - --bindir=${FLATPAK_DEST}/bin32
+        - --bindir=/app/share/steam/compatibilitytools.d/WineASIO/bin32
         - --with-mingw=ccache i686-w64-mingw32-gcc
       env:
-        LIBDIR: lib32
+        LIBDIR: /app/share/steam/compatibilitytools.d/WineASIO/lib32
     config-opts: *wine-config-opts
     make-install-args: *wine-make-install-args
-    post-install:
-      - mv ${FLATPAK_DEST}/bin32/wine{,-preloader} ${FLATPAK_DEST}/bin/
+    # post-install:
+    #   - mv ${FLATPAK_DEST}/bin32/wine{,-preloader} ${FLATPAK_DEST}/bin/
     sources: *wine-sources
     cleanup:
       - /bin32
@@ -114,14 +116,19 @@ modules:
   - name: wineasio
     no-autogen: true
     make-args:
+      - PATH=/app/share/steam/compatibilitytools.d/WineASIO/bin:/usr/bin:/usr/lib/sdk/toolchain-i386/bin
       - CC=ccache gcc
       - CXX=ccache g++
-      - CFLAGS=-I/app/include -I/app/include/wine -I/app/include/wine/windows
+      - >-
+        CFLAGS=
+        -I/app/share/steam/compatibilitytools.d/WineASIO/include
+        -I/app/share/steam/compatibilitytools.d/WineASIO/include/wine
+        -I/app/share/steam/compatibilitytools.d/WineASIO/include/wine/windows
       - '64'
     no-make-install: true
     build-commands:
-      - install -Dm644 build64/wineasio.dll    /app/lib/wine/x86_64-windows/wineasio.dll
-      - install -Dm755 build64/wineasio.dll.so /app/lib/wine/x86_64-unix/wineasio.dll.so
+      - install -Dm644 build64/wineasio.dll    /app/share/steam/compatibilitytools.d/WineASIO/lib/wine/x86_64-windows/wineasio.dll
+      - install -Dm755 build64/wineasio.dll.so /app/share/steam/compatibilitytools.d/WineASIO/lib/wine/x86_64-unix/wineasio.dll.so
     sources: &wineasio_sources
       - type: git
         url: https://github.com/wineasio/wineasio.git
@@ -134,17 +141,18 @@ modules:
   - name: wineasio-32bit
     no-autogen: true
     make-args:
-      - PATH=/app/bin:/usr/bin:/usr/lib/sdk/toolchain-i386/bin
+      - PATH=/app/share/steam/compatibilitytools.d/WineASIO/bin32:/usr/bin:/usr/lib/sdk/toolchain-i386/bin
       - CC=ccache i686-unknown-linux-gnu-gcc
       - CXX=ccache i686-unknown-linux-gnu-g++
-      - WINEBUILD=/app/bin32/winebuild
-      - WINECC=/app/bin32/winegcc
-      - CFLAGS=-I/app/include -I/app/include/wine -I/app/include/wine/windows
-      - LDFLAGS=-L/app/lib32 -L/usr/lib/sdk/toolchain-i386/lib
+      - >-
+        CFLAGS=
+        -I/app/share/steam/compatibilitytools.d/WineASIO/include
+        -I/app/share/steam/compatibilitytools.d/WineASIO/include/wine
+        -I/app/share/steam/compatibilitytools.d/WineASIO/include/wine/windows
+      - LDFLAGS=-L/app/share/steam/compatibilitytools.d/WineASIO/lib32 -L/usr/lib/sdk/toolchain-i386/lib
       - '32'
     no-make-install: true
     build-commands:
-      - install -Dm644 build32/wineasio.dll    /app/lib32/wine/i386-windows/wineasio.dll
-      - install -Dm755 build32/wineasio.dll.so /app/lib32/wine/i386-unix/wineasio.dll.so
-      - find /app -name '*wineasio*'
+      - install -Dm644 build32/wineasio.dll    /app/share/steam/compatibilitytools.d/WineASIO/lib32/wine/i386-windows/wineasio.dll
+      - install -Dm755 build32/wineasio.dll.so /app/share/steam/compatibilitytools.d/WineASIO/lib32/wine/i386-unix/wineasio.dll.so
     sources: *wineasio_sources
