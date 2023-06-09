@@ -19,6 +19,7 @@ This is an early stage proof of concept.
   - [Install Rocksmith 2014 \& Mods](#install-rocksmith-2014--mods)
   - [Configure Proton](#configure-proton)
   - [Adjust Launch Options](#adjust-launch-options)
+  - [Run the Game from Steam](#run-the-game-from-steam)
 - [Debugging](#debugging)
 
 
@@ -105,6 +106,14 @@ Adjust `PIPEWIRE_LATENCY` to the correct value for your audio interface.
     PIPEWIRE_LATENCY="256/48000" /app/share/steam/compatibilitytools.d/WineASIO/bin/wineasioutil %command%
 
 [`wineasioutil`](wineasioutil/) configures DLLs inside Proton installation & game prefix, and enables logging.
+
+
+### Run the Game from Steam
+
+At this point, run Rocksmith 2014 from Steam as usual.
+
+You might need to do it twice in case of fresh install,
+or after deleting the game prefix. Let Proton regenerate the prefix.
 
 
 ## Debugging
