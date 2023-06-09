@@ -156,3 +156,11 @@ modules:
       - install -Dm644 build32/wineasio.dll    /app/share/steam/compatibilitytools.d/WineASIO/lib32/wine/i386-windows/wineasio.dll
       - install -Dm755 build32/wineasio.dll.so /app/share/steam/compatibilitytools.d/WineASIO/lib32/wine/i386-unix/wineasio.dll.so
     sources: *wineasio_sources
+
+  - name: wineasioutil
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 wineasioutil -t /app/share/steam/compatibilitytools.d/WineASIO/bin
+    sources:
+      - type: file
+        path: wineasioutil/wineasioutil

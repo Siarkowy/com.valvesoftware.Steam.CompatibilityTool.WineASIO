@@ -1,0 +1,144 @@
+#!/bin/bash
+
+exec 2> >(tee "${XDG_DATA_HOME:-/tmp}/wineasioutil.log") 1>&2
+
+set -euo pipefail
+if [ "${DEBUG:-0}" -ge 9 ]; then
+  set -x
+fi
+
+_log() {
+  echo >&2 "[wineasioutil]" "$@"
+}
+
+find_proton_path() {
+  echo "$@" | grep -Eo '[^ ]+compatibilitytools.d[^ ]+'
+}
+
+find_prefix_path() {
+  echo "$@" \
+    | grep -Eo '[^ ]+Rocksmith2014.exe' \
+    | sed 's:/common/Rocksmith2014/Rocksmith2014.exe:/compatdata/221680/pfx:'
+}
+
+get_proton_root_dir() {
+  dirname "$1"
+}
+
+copy_wineasio_dlls() {
+  local proton_root="$1"
+  local compat_pfx="$2"
+
+  WINEASIO_DIR="/app/share/steam/compatibilitytools.d/WineASIO"
+
+  _log "Installing 32-bit wineasio files in Proton."
+  install -v -m555 "${WINEASIO_DIR}/lib32/wine/i386-windows/wineasio.dll" "${proton_root}/files/lib/wine/i386-windows/"
+  install -v -m555 "${WINEASIO_DIR}/lib32/wine/i386-unix/wineasio.dll.so" "${proton_root}/files/lib/wine/i386-unix/"
+
+  _log "Installing 64-bit wineasio files in Proton."
+  install -v -m555 "${WINEASIO_DIR}/lib/wine/x86_64-windows/wineasio.dll" "${proton_root}/files/lib64/wine/x86_64-windows/"
+  install -v -m555 "${WINEASIO_DIR}/lib/wine/x86_64-unix/wineasio.dll.so" "${proton_root}/files/lib64/wine/x86_64-unix/"
+
+  _log "Making wineasio DLLs loadable in game from Proton prefix."
+  install -v -m444 "${WINEASIO_DIR}/lib32/wine/i386-windows/wineasio.dll" "${compat_pfx}/drive_c/windows/syswow64/"
+  install -v -m444 "${WINEASIO_DIR}/lib/wine/x86_64-windows/wineasio.dll" "${compat_pfx}/drive_c/windows/system32/"
+}
+
+register_wineasio_dlls() {
+  local proton_root="$1"
+  local compat_pfx="$2"
+
+  (
+    export WINEPREFIX="${compat_pfx}"
+
+    export WINEESYNC=1
+    export WINEFSYNC=1
+
+    set -x
+    env | grep WINE
+
+    # 32-bit
+    "${proton_root}/files/bin/wine" regsvr32 "${proton_root}/files/lib/wine/i386-windows/wineasio.dll"
+
+    # 64-bit
+    "${proton_root}/files/bin/wine64" regsvr32 "${proton_root}/files/lib64/wine/x86_64-windows/wineasio.dll"
+  )
+}
+
+validate_sandbox_env() {
+  if [ -z "${FLATPAK_ID:-}" ]; then
+    _log Running outside of Flatpak unsupported.
+    exit 1
+  fi
+}
+
+validate_game_env() {
+  if [ -z "${PIPEWIRE_LATENCY:-}" ]; then
+    _log Required PIPEWIRE_LATENCY variable missing.
+    exit 1
+  fi
+}
+
+create_prefix_if_necessary() {
+  local PROTON_PREFIX="$1"
+
+  if [ -d "${PROTON_PREFIX}" ]; then
+    _log Game Prefix exists, skipping first run.
+    return
+  fi
+
+  _log Game Prefix does not exist, running first time to create.
+
+  set -x
+  # first run
+  exec "${@:2}"
+}
+
+run_game() {
+  if [ "${DEBUG:-0}" -ge 1 ]; then
+    _log "Enabling PROTON_LOG in: ${XDG_DATA_HOME}"
+    export PROTON_LOG=1
+    export PROTON_LOG_DIR=$XDG_DATA_HOME
+  fi
+
+  if [ "${DEBUG:-0}" -ge 2 ]; then
+    _log "Enabling PROTON_DUMP_DEBUG_COMMANDS in: ${XDG_DATA_HOME}"
+    export PROTON_DUMP_DEBUG_COMMANDS=1
+    export PROTON_DEBUG_DIR=$XDG_DATA_HOME
+  fi
+
+  if [ "${DEBUG:-0}" -ge 3 ]; then
+    _log "Enabling PipeWire debugging."
+    export PIPEWIRE_DEBUG="${PIPEWIRE_DEBUG:-3}"
+  fi
+
+  set -x
+
+  # required variables
+  export LD_PRELOAD="/lib/i386-linux-gnu/libjack.so.0"
+  export WINEDLLOVERRIDES="wineasio.dll=b"
+
+  # godspeed
+  exec "$@" &> "${XDG_DATA_HOME:-/tmp}/proton.log"
+}
+
+main() {
+  validate_sandbox_env
+
+  PROTON_PATH="$(find_proton_path "$@")"
+  PROTON_ROOT="$(get_proton_root_dir "${PROTON_PATH}")"
+  PROTON_PREFIX="$(find_prefix_path "$@")"
+
+  _log "Running using Proton: ${PROTON_ROOT}"
+  _log "Running using Prefix: ${PROTON_PREFIX}"
+
+  create_prefix_if_necessary "${PROTON_PREFIX}" "$@"
+
+  copy_wineasio_dlls "${PROTON_ROOT}" "${PROTON_PREFIX}"
+  register_wineasio_dlls "${PROTON_ROOT}" "${PROTON_PREFIX}"
+
+  validate_game_env
+  run_game "$@"
+}
+
+main "$@"
