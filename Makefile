@@ -4,7 +4,7 @@ BUILDER_APP := org.flatpak.Builder
 STEAM_APP := com.valvesoftware.Steam
 WINEASIO_APP := com.valvesoftware.Steam.CompatibilityTool.WineASIO
 
-DEBUG := 0
+DEBUG := 9
 
 .PHONY: all
 all: test
