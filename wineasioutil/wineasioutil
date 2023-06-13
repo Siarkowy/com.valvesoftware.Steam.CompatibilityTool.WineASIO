@@ -29,19 +29,32 @@ get_proton_root_dir() {
   dirname "$1"
 }
 
-copy_wineasio_dlls() {
+get_proton_dist_dir() {
   local proton_root="$1"
+
+  if [ -d "${proton_root}/dist" ]; then
+    echo "${proton_root}/dist"
+  elif [ -d "${proton_root}/files" ]; then
+    echo "${proton_root}/files"
+  else
+    _log "Proton Dist directory not found in: ${proton_root}"
+    return 1
+  fi
+}
+
+copy_wineasio_dlls() {
+  local proton_dist="$1"
   local compat_pfx="$2"
 
   WINEASIO_DIR="/app/share/steam/compatibilitytools.d/WineASIO"
 
   _log "Installing 32-bit wineasio files in Proton."
-  install -v -m755 "${WINEASIO_DIR}/lib32/wine/i386-windows/wineasio.dll" "${proton_root}/files/lib/wine/i386-windows/"
-  install -v -m755 "${WINEASIO_DIR}/lib32/wine/i386-unix/wineasio.dll.so" "${proton_root}/files/lib/wine/i386-unix/"
+  install -v -m755 "${WINEASIO_DIR}/lib32/wine/i386-windows/wineasio.dll" "${proton_dist}/lib/wine/i386-windows/"
+  install -v -m755 "${WINEASIO_DIR}/lib32/wine/i386-unix/wineasio.dll.so" "${proton_dist}/lib/wine/i386-unix/"
 
   _log "Installing 64-bit wineasio files in Proton."
-  install -v -m755 "${WINEASIO_DIR}/lib/wine/x86_64-windows/wineasio.dll" "${proton_root}/files/lib64/wine/x86_64-windows/"
-  install -v -m755 "${WINEASIO_DIR}/lib/wine/x86_64-unix/wineasio.dll.so" "${proton_root}/files/lib64/wine/x86_64-unix/"
+  install -v -m755 "${WINEASIO_DIR}/lib/wine/x86_64-windows/wineasio.dll" "${proton_dist}/lib64/wine/x86_64-windows/"
+  install -v -m755 "${WINEASIO_DIR}/lib/wine/x86_64-unix/wineasio.dll.so" "${proton_dist}/lib64/wine/x86_64-unix/"
 
   _log "Making wineasio DLLs loadable in game from Proton prefix."
   install -v -m644 "${WINEASIO_DIR}/lib32/wine/i386-windows/wineasio.dll" "${compat_pfx}/drive_c/windows/syswow64/"
@@ -49,7 +62,7 @@ copy_wineasio_dlls() {
 }
 
 register_wineasio_dlls() {
-  local proton_root="$1"
+  local proton_dist="$1"
   local compat_pfx="$2"
 
   (
@@ -62,10 +75,10 @@ register_wineasio_dlls() {
     env | grep WINE
 
     # 32-bit
-    "${proton_root}/files/bin/wine" regsvr32 "${proton_root}/files/lib/wine/i386-windows/wineasio.dll"
+    "${proton_dist}/bin/wine" regsvr32 "${proton_dist}/lib/wine/i386-windows/wineasio.dll"
 
     # 64-bit
-    "${proton_root}/files/bin/wine64" regsvr32 "${proton_root}/files/lib64/wine/x86_64-windows/wineasio.dll"
+    "${proton_dist}/bin/wine64" regsvr32 "${proton_dist}/lib64/wine/x86_64-windows/wineasio.dll"
   )
 }
 
@@ -131,15 +144,17 @@ main() {
 
   PROTON_PATH="$(find_proton_path "$@")"
   PROTON_ROOT="$(get_proton_root_dir "${PROTON_PATH}")"
+  PROTON_DIST="$(get_proton_dist_dir "${PROTON_ROOT}")"
   PROTON_PREFIX="$(find_prefix_path "$@")"
 
   _log "Running using Proton: ${PROTON_ROOT}"
+  _log "Using Proton Dist in: ${PROTON_DIST}"
   _log "Running using Prefix: ${PROTON_PREFIX}"
 
   create_prefix_if_necessary "${PROTON_PREFIX}" "$@"
 
-  copy_wineasio_dlls "${PROTON_ROOT}" "${PROTON_PREFIX}"
-  register_wineasio_dlls "${PROTON_ROOT}" "${PROTON_PREFIX}"
+  copy_wineasio_dlls "${PROTON_DIST}" "${PROTON_PREFIX}"
+  register_wineasio_dlls "${PROTON_DIST}" "${PROTON_PREFIX}"
 
   validate_game_env
   run_game "$@"
