@@ -12,7 +12,11 @@ _log() {
 }
 
 find_proton_path() {
-  echo "$@" | grep -Eo '[^ ]+compatibilitytools.d[^ ]+'
+  for arg in "$@"; do
+    if echo "$arg" | grep -E 'proton$'; then
+      return
+    fi
+  done
 }
 
 find_prefix_path() {
