@@ -113,20 +113,20 @@ create_prefix_if_necessary() {
 
 run_game() {
   if [ "${DEBUG:-0}" -ge 1 ]; then
-    _log "Enabling PROTON_LOG in: ${XDG_DATA_HOME}"
     export PROTON_LOG=1
-    export PROTON_LOG_DIR=$XDG_DATA_HOME
+    export PROTON_LOG_DIR="${PROTON_LOG_DIR:-${XDG_DATA_HOME}}"
+    _log "Enabled PROTON_LOG in: ${PROTON_LOG_DIR}"
   fi
 
   if [ "${DEBUG:-0}" -ge 2 ]; then
-    _log "Enabling PROTON_DUMP_DEBUG_COMMANDS in: ${XDG_DATA_HOME}"
     export PROTON_DUMP_DEBUG_COMMANDS=1
-    export PROTON_DEBUG_DIR=$XDG_DATA_HOME
+    export PROTON_DEBUG_DIR="${PROTON_DEBUG_DIR:-${XDG_DATA_HOME}}"
+    _log "Enabled PROTON_DUMP_DEBUG_COMMANDS in: ${PROTON_DEBUG_DIR}"
   fi
 
   if [ "${DEBUG:-0}" -ge 3 ]; then
-    _log "Enabling PipeWire debugging."
     export PIPEWIRE_DEBUG="${PIPEWIRE_DEBUG:-3}"
+    _log "Enabled PipeWire debugging."
   fi
 
   set -x
