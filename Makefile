@@ -21,12 +21,8 @@ overrides:
 	# debugging level
 	flatpak override --user --env=DEBUG=$(DEBUG) $(STEAM_APP)
 
-	# pipewire socket access
+	# pipewire jack access
 	flatpak override --user --filesystem=xdg-run/pipewire-0 $(STEAM_APP)
-
-	# realtime privileges (test me)
-	flatpak override --user --system-talk-name=org.freedesktop.RealtimeKit1 $(STEAM_APP)
-	flatpak override --user --own-name=org.freedesktop.ReserveDevice1.* $(STEAM_APP)
 
 .PHONY: run
 run:
