@@ -142,10 +142,10 @@ run_game() {
 main() {
   validate_sandbox_env
 
-  PROTON_PATH="$(find_proton_path "$@")"
+  PROTON_PATH="${PROTON_PATH:-$(find_proton_path "$@")}"
   PROTON_ROOT="$(get_proton_root_dir "${PROTON_PATH}")"
   PROTON_DIST="$(get_proton_dist_dir "${PROTON_ROOT}")"
-  PROTON_PREFIX="$(find_prefix_path "$@")"
+  PROTON_PREFIX="${PROTON_PREFIX:-$(find_prefix_path "$@")}"
 
   _log "Running using Proton: ${PROTON_ROOT}"
   _log "Using Proton Dist in: ${PROTON_DIST}"
