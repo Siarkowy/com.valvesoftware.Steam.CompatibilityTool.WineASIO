@@ -139,7 +139,7 @@ run_game() {
   set -x
 
   # required variables
-  export LD_PRELOAD="/lib/i386-linux-gnu/libjack.so.0"
+  export LD_PRELOAD="/usr/lib/i386-linux-gnu/libjack.so.0"
   export WINEDLLOVERRIDES="wineasio.dll=b"
 
   # godspeed
