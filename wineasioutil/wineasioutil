@@ -129,6 +129,13 @@ run_game() {
     _log "Enabled PipeWire debugging."
   fi
 
+  if [ "${DEBUG:-0}" -ge 4 ]; then
+    export STEAM_LINUX_RUNTIME_LOG="${STEAM_LINUX_RUNTIME_LOG:-1}"
+    export STEAM_LINUX_RUNTIME_LOG_DIR="${STEAM_LINUX_RUNTIME_LOG_DIR:-${XDG_DATA_HOME}}"
+    export STEAM_LINUX_RUNTIME_VERBOSE="${STEAM_LINUX_RUNTIME_VERBOSE:-0}"
+    _log "Enabled Steam Runtime debugging."
+  fi
+
   set -x
 
   # required variables
