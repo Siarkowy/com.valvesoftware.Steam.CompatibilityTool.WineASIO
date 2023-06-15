@@ -88,7 +88,9 @@ Refer to Linux Rocksmith Guide for instructions.
 
 ### Configure Proton
 
-Preferably, install a dedicated, current version of Proton using
+Preferably, use an older Proton version like `7.0-6`, shipped by Steam.
+
+Alternatively, install a dedicated, current version of Proton using
 [ProtonUp-Qt](https://flathub.org/apps/net.davidotek.pupgui2).
 
 It is necessary to restart Steam to pick up available Proton versions.
