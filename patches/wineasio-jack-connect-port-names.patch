@@ -1,0 +1,36 @@
+diff --git a/asio.c b/asio.c
+index 49bb4a6..a9d19b6 100644
+--- a/asio.c
++++ b/asio.c
+@@ -878,6 +878,18 @@ HIDDEN ASIOError STDMETHODCALLTYPE GetChannelInfo(LPWINEASIO iface, ASIOChannelI
+     return ASE_OK;
+ }
+ 
++#define _PIPEWIRE_PREFIX "pw-"
++
++// Skip PipeWire prefix from port name. Allows Rocksmith 2014 to connect ports successfully.
++inline const char * _drop_pw_prefix (const char *pw_name) {
++    char *name = (char *) pw_name;
++
++    if (strstr(name, _PIPEWIRE_PREFIX) != NULL)
++        name += strlen(_PIPEWIRE_PREFIX);
++
++    return name;
++}
++
+ /*
+  * ASIOError CreateBuffers(ASIOBufferInfo *bufferInfo, LONG numChannels, LONG bufferSize, ASIOCallbacks *asioCallbacks);
+  *  Function:   Allocate buffers for IO channels
+@@ -1047,10 +1059,10 @@ HIDDEN ASIOError STDMETHODCALLTYPE CreateBuffers(LPWINEASIO iface, ASIOBufferInf
+     {
+         for (i = 0; i < This->jack_num_input_ports && i < This->wineasio_number_inputs; i++)
+             if (strstr(jack_port_type(jack_port_by_name(This->jack_client, This->jack_input_ports[i])), "audio"))
+-                jack_connect(This->jack_client, This->jack_input_ports[i], jack_port_name(This->input_channel[i].port));
++                jack_connect(This->jack_client, This->jack_input_ports[i], _drop_pw_prefix(jack_port_name(This->input_channel[i].port)));
+         for (i = 0; i < This->jack_num_output_ports && i < This->wineasio_number_outputs; i++)
+             if (strstr(jack_port_type(jack_port_by_name(This->jack_client, This->jack_output_ports[i])), "audio"))
+-                jack_connect(This->jack_client, jack_port_name(This->output_channel[i].port), This->jack_output_ports[i]);
++                jack_connect(This->jack_client, _drop_pw_prefix(jack_port_name(This->output_channel[i].port)), This->jack_output_ports[i]);
+     }
+ 
+     /* at this point all the connections are made and the jack process callback is outputting silence */

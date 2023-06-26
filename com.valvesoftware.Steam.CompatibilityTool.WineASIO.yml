@@ -137,6 +137,9 @@ modules:
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$
+      - type: patch
+        paths:
+          - patches/wineasio-jack-connect-port-names.patch
 
   - name: wineasio-32bit
     no-autogen: true
