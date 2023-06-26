@@ -82,6 +82,12 @@ register_wineasio_dlls() {
   )
 }
 
+find_pipewire_jack_so() {
+  # find /usr -name '*libjack.so.0*'
+
+  find /usr/lib/i386-linux-gnu/libjack.so.0
+}
+
 validate_sandbox_env() {
   if [ -z "${FLATPAK_ID:-}" ]; then
     _log Running outside of Flatpak unsupported.
@@ -92,6 +98,13 @@ validate_sandbox_env() {
 validate_game_env() {
   if [ -z "${PIPEWIRE_LATENCY:-}" ]; then
     _log Required PIPEWIRE_LATENCY variable missing.
+    exit 1
+  fi
+
+  if ! find_pipewire_jack_so; then
+    _log "Required 32-bit pipewire-jack .so missing.
+--
+$(find /usr -name '*libjack.so.0*' || true)"
     exit 1
   fi
 }
@@ -139,7 +152,7 @@ run_game() {
   set -x
 
   # required variables
-  export LD_PRELOAD="/usr/lib/i386-linux-gnu/libjack.so.0"
+  export LD_PRELOAD="$(find_pipewire_jack_so)"
   export WINEDLLOVERRIDES="wineasio.dll=b"
 
   # godspeed
