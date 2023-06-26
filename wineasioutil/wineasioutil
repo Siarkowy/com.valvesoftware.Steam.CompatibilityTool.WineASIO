@@ -155,6 +155,9 @@ run_game() {
   export LD_PRELOAD="$(find_pipewire_jack_so)"
   export WINEDLLOVERRIDES="wineasio.dll=b"
 
+  export WINEASIO_NUMBER_INPUTS="${WINEASIO_NUMBER_INPUTS:-2}"
+  export WINEASIO_NUMBER_OUTPUTS="${WINEASIO_NUMBER_OUTPUTS:-2}"
+
   # godspeed
   exec "$@" &> "${XDG_DATA_HOME:-/tmp}/proton.log"
 }
